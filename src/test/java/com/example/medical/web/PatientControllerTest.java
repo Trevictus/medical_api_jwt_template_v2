@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -101,4 +102,15 @@ class PatientControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
+    void putPatient_returns200AndUpdate() throws Exception {
+        PatientResponse update = new PatientResponse(1L, "123", "Ana", "Lopez", "611111111", true);
+        when(service.update(eq(1L), any(PatientCreateRequest.class))).thenReturn(update);
+
+        mvc.perform(put("/patients/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(new PatientCreateRequest("123", "Ana", "Lopez", "611111111"))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.firstName").value("Ana Maria"))
+                .andExpect(jsonPath("$.lastName").value("Lopez Garcia"));
+    }
 }
