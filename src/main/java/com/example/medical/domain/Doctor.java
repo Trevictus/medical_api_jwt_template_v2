@@ -35,7 +35,7 @@ public class Doctor {
   )
   private Set<Specialty> specialties = new HashSet<>();
 
-  protected Doctor() {}
+  public Doctor() {}
 
   public Long getId() { return id; }
   public AppUser getUser() { return user; }

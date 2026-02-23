@@ -11,6 +11,8 @@ import java.time.LocalDateTime;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import static com.example.medical.repo.AppointmentSpecifications.*;
+import org.springframework.data.jpa.domain.Specification;
 
 @Service
 public class AppointmentServiceImpl implements AppointmentService {
@@ -49,11 +51,21 @@ public class AppointmentServiceImpl implements AppointmentService {
     return toDto(a);
   }
 
-  @Override
-  public Page<AppointmentResponse> list(Long doctorId, Long patientId, AppointmentStatus status, LocalDate dateFrom, LocalDate dateTo, Pageable pageable) {
-    // Minimal baseline: filter in memory (students can improve with Specifications/QueryDSL)
-    return appts.findAll(pageable).map(this::toDto).map(dto -> dto);
-  }
+    @Override
+    public Page<AppointmentResponse> list(Long doctorId, Long patientId, AppointmentStatus status,
+                                          LocalDate dateFrom, LocalDate dateTo, Pageable pageable) {
+
+        // Combinar todas las specifications con AND
+        Specification<Appointment> spec = Specification
+                .where(byDoctorId(doctorId))      // WHERE doctor_id = ? (si no es null)
+                .and(byPatientId(patientId))      // AND patient_id = ? (si no es null)
+                .and(byStatus(status))            // AND status = ? (si no es null)
+                .and(byDateFrom(dateFrom))        // AND start_at >= ? (si no es null)
+                .and(byDateTo(dateTo));           // AND start_at < ? (si no es null)
+
+        // Ejecutar consulta con paginación
+        return appts.findAll(spec, pageable).map(this::toDto);
+    }
 
   @Override
   public AppointmentResponse update(Long id, AppointmentCreateRequest req) {
