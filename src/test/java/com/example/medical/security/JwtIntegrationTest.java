@@ -23,6 +23,7 @@ class JwtIntegrationTest {
   @Autowired ObjectMapper om;
 
   @Test
+  //Credenciales válidas /auth/login
   void login_validCredentials_returnsToken() throws Exception {
     mvc.perform(post("/auth/login")
         .contentType(MediaType.APPLICATION_JSON)
@@ -33,12 +34,14 @@ class JwtIntegrationTest {
   }
 
   @Test
+  //Acceso sin token a endpoint protegido
   void accessProtectedEndpoint_withoutToken_returns401() throws Exception{
 
     mvc.perform(get("/patients"))
             .andExpect(status().isUnauthorized());
   }
 
+  //Función para hacer login obteniendo token de JWT
   private String obtenerToken(String email, String password) throws Exception{
     MvcResult result = mvc.perform(post("/auth/login")
             .contentType(MediaType.APPLICATION_JSON)
@@ -51,6 +54,7 @@ class JwtIntegrationTest {
   }
 
   @Test
+  //Acceso con rol no permitido
   void accessPatient_withPacientRole_return403() throws Exception{
 
     String tokenPaciente = obtenerToken("patient@hospital.com", "Patient1234!");
@@ -61,6 +65,7 @@ class JwtIntegrationTest {
   }
 
   @Test
+  //Acceso con rol permitido
   void accesPatient_withAdminRole_return200() throws Exception{
 
     String tokenAdmin = obtenerToken("admin@hospital.com", "Admin1234!");
