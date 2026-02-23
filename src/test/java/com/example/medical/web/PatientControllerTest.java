@@ -3,6 +3,7 @@ package com.example.medical.web;
 
 import com.example.medical.dto.patient.PatientCreateRequest;
 import com.example.medical.dto.patient.PatientResponse;
+import com.example.medical.error.NotFoundException;
 import com.example.medical.service.PatientService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -21,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -58,13 +60,13 @@ class PatientControllerTest {
         //Proporcionado Dto que no cumple con @NotBlank en PatientCreateRequest
         String invalidJson =
                 """
-                        {
-                        "dni": "123",
-                        "firstName": "",
-                        "lastName: "Lopez",
-                        "phone": "600000000"
-                        }
-                """;
+                                {
+                                "dni": "123",
+                                "firstName": "",
+                                "lastName: "Lopez",
+                                "phone": "600000000"
+                                }
+                        """;
         mvc.perform(post("/patients")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(invalidJson))
@@ -72,4 +74,31 @@ class PatientControllerTest {
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.message").exists());
     }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void getPatients_notFound_returns404() throws Exception {
+        //Se lanza excepción al no encontrar el paciente con id 91
+        when(service.getById(91L)).thenThrow(new NotFoundException("Patient not found"));
+
+        mvc.perform(get("/patients/91"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.message").value("Patient not found"))
+                .andExpect(jsonPath("$.path").value("/patients/91"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void deletePatient_returns204() throws Exception {
+        //Si el paciente existe no lanza excepción
+        doNothing().when(service).delete(1L);
+
+        mvc.perform(delete("/patients/1"))
+                .andExpect(status().isNoContent())
+                .andExpect(content().string(""));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
 }
