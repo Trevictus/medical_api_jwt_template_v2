@@ -103,6 +103,7 @@ class PatientControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void putPatient_returns200AndUpdate() throws Exception {
+        //Devuelve el paciente actualizado
         PatientResponse update = new PatientResponse(1L, "123", "Ana", "Lopez", "611111111", true);
         when(service.update(eq(1L), any(PatientCreateRequest.class))).thenReturn(update);
 

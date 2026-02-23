@@ -9,7 +9,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -28,5 +30,43 @@ class JwtIntegrationTest {
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.token").exists())
       .andExpect(jsonPath("$.tokenType").value("Bearer"));
+  }
+
+  @Test
+  void accessProtectedEndpoint_withoutToken_returns401() throws Exception{
+
+    mvc.perform(get("/patients"))
+            .andExpect(status().isUnauthorized());
+  }
+
+  private String obtenerToken(String email, String password) throws Exception{
+    MvcResult result = mvc.perform(post("/auth/login")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(om.writeValueAsString(new LoginRequest(email, password))))
+            .andExpect(status().isOk())
+            .andReturn();
+
+    String responseBody = result.getResponse().getContentAsString();
+    return om.readTree(responseBody).get("token").asText();
+  }
+
+  @Test
+  void accessPatient_withPacientRole_return403() throws Exception{
+
+    String tokenPaciente = obtenerToken("patient@hospital.com", "Patient1234!");
+
+    mvc.perform(get("/patients")
+            .header("Authorization", "Bearer " + tokenPaciente))
+            .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void accesPatient_withAdminRole_return200() throws Exception{
+
+    String tokenAdmin = obtenerToken("admin@hospital.com", "Admin1234!");
+
+    mvc.perform(get("/patients")
+            .header("Authorization", "Bearer " + tokenAdmin))
+            .andExpect(status().isOk());
   }
 }
