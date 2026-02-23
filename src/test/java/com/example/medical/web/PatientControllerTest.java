@@ -2,6 +2,7 @@
 package com.example.medical.web;
 
 import com.example.medical.dto.patient.PatientCreateRequest;
+import com.example.medical.dto.patient.PatientResponse;
 import com.example.medical.service.PatientService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -14,9 +15,13 @@ import com.example.medical.security.JwtAuthFilter;
 import com.example.medical.security.JwtService;
 import com.example.medical.security.JwtProperties;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -24,24 +29,47 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import({SecurityConfig.class, JwtAuthFilter.class, JwtService.class, JwtProperties.class})
 class PatientControllerTest {
 
-  @Autowired MockMvc mvc;
-  @Autowired ObjectMapper om;
+    @Autowired
+    MockMvc mvc;
+    @Autowired
+    ObjectMapper om;
 
-  @MockBean PatientService service;
+    @MockBean
+    PatientService service;
 
-  @Test
-  void postPatients_returns201AndLocation_template() throws Exception {
-    // TODO: build a valid JWT or switch to @SpringBootTest for easier JWT tests
-    // This test is provided as a placeholder; students should implement the full version in integration tests.
-    Mockito.when(service.create(Mockito.any())).thenAnswer(inv -> {
-      var req = (PatientCreateRequest) inv.getArgument(0);
-      return new com.example.medical.dto.patient.PatientResponse(1L, req.dni(), req.firstName(), req.lastName(), req.phone(), true);
-    });
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void postPatients_returns201AndLocation_template() throws Exception {
+        PatientResponse response = new PatientResponse(1L, "123", "Ana", "Lopez", "600000000", true);
+        when(service.create(any(PatientCreateRequest.class))).thenReturn(response);
 
-    // With Security enabled, unauthenticated request must be 401
-    mvc.perform(post("/patients")
-        .contentType(MediaType.APPLICATION_JSON)
-        .content(om.writeValueAsString(new PatientCreateRequest("123", "Ana", "Lopez", "600000000"))))
-      .andExpect(status().isUnauthorized());
-  }
+        mvc.perform(post("/patients")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(new PatientCreateRequest("123", "Ana", "Lopez", "600000000"))))
+                .andExpect(status().isCreated())
+                .andExpect(header().string("Location", containsString("/patients/1")))
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.firstName").value("Ana"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void postPatients_invalidDto_return400() throws Exception {
+        //Proporcionado Dto que no cumple con @NotBlank en PatientCreateRequest
+        String invalidJson =
+                """
+                        {
+                        "dni": "123",
+                        "firstName": "",
+                        "lastName: "Lopez",
+                        "phone": "600000000"
+                        }
+                """;
+        mvc.perform(post("/patients")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalidJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").exists());
+    }
 }
