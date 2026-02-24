@@ -65,4 +65,31 @@ class AppointmentServiceTest {
     NotFoundException ex = assertThrows(NotFoundException.class, () -> service.create(req));
     assertEquals("Patient not found", ex.getMessage());
   }
+
+  @Test
+  void create_invalidDate_throwsInvalidDataException() {
+    LocalDateTime start = LocalDateTime.now().plusDays(1);
+    LocalDateTime end = start.minusMinutes(30);
+    AppointmentCreateRequest req = new AppointmentCreateRequest(1L, 1L, start, end, "consulta");
+
+    InvalidDataException ex = assertThrows(InvalidDataException.class, () -> service.create(req));
+    assertEquals("endAt must be after startAt", ex.getMessage());
+  }
+
+  @Test
+  void create_startEqualsEnd_throwsInvalidDataException() {
+    LocalDateTime sameTime = LocalDateTime.now().plusHours(1);
+    AppointmentCreateRequest req = new AppointmentCreateRequest(1L, 1L, sameTime, sameTime, "consulta");
+
+    InvalidDataException ex = assertThrows(InvalidDataException.class, () -> service.create(req));
+    assertEquals("endAt must be after startAt", ex.getMessage());
+  }
+
+  @Test
+  void create_nullTimes_throwsInvalidDataException() {
+    AppointmentCreateRequest req = new AppointmentCreateRequest(1L, 1L, null, null, "consulta");
+
+    InvalidDataException ex = assertThrows(InvalidDataException.class, () -> service.create(req));
+    assertEquals("startAt/endAt required", ex.getMessage());
+  }
 }
