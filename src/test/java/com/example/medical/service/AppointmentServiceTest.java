@@ -60,7 +60,7 @@ class AppointmentServiceTest {
 
     Doctor mockDoctor = mock(Doctor.class);
     when(doctors.findById(1L)).thenReturn(Optional.of(mockDoctor));
-    when(patients.findById(999L)).thenReturn(Optional.empty());
+    when(patients.findById(99L)).thenReturn(Optional.empty());
 
     NotFoundException ex = assertThrows(NotFoundException.class, () -> service.create(req));
     assertEquals("Patient not found", ex.getMessage());

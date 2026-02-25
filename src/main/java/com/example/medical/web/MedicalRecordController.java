@@ -22,12 +22,12 @@ public class MedicalRecordController {
   @PostMapping
   public ResponseEntity<MedicalRecordResponse> create(@Valid @RequestBody MedicalRecordCreateRequest req) {
     MedicalRecordResponse created = service.create(req);
-    URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/<built-in function id>")
+    URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
       .buildAndExpand(created.id()).toUri();
     return ResponseEntity.created(location).body(created);
   }
 
-  @GetMapping("/<built-in function id>")
+  @GetMapping("/{id}")
   public ResponseEntity<MedicalRecordResponse> get(@PathVariable Long id) {
     return ResponseEntity.ok(service.getById(id));
   }

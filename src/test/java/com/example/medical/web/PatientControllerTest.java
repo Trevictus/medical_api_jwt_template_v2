@@ -4,17 +4,16 @@ package com.example.medical.web;
 import com.example.medical.dto.patient.PatientCreateRequest;
 import com.example.medical.dto.patient.PatientResponse;
 import com.example.medical.error.NotFoundException;
+import com.example.medical.repo.UserRepository;
 import com.example.medical.service.PatientService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import com.example.medical.security.SecurityConfig;
 import com.example.medical.security.JwtAuthFilter;
 import com.example.medical.security.JwtService;
-import com.example.medical.security.JwtProperties;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -29,7 +28,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(PatientController.class)
-@Import({SecurityConfig.class, JwtAuthFilter.class, JwtService.class, JwtProperties.class})
+@Import({SecurityConfig.class, JwtAuthFilter.class, JwtService.class})
 class PatientControllerTest {
 
     @Autowired
@@ -39,6 +38,9 @@ class PatientControllerTest {
 
     @MockBean
     PatientService service;
+
+    @MockBean
+    UserRepository userRepository;
 
     @Test
     @WithMockUser(roles = "ADMIN")
@@ -111,7 +113,7 @@ class PatientControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(new PatientCreateRequest("123", "Ana", "Lopez", "611111111"))))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.firstName").value("Ana Maria"))
-                .andExpect(jsonPath("$.lastName").value("Lopez Garcia"));
+                .andExpect(jsonPath("$.firstName").value("Ana"))
+                .andExpect(jsonPath("$.lastName").value("Lopez"));
     }
 }

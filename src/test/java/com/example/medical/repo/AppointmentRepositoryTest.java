@@ -1,12 +1,14 @@
 
 package com.example.medical.repo;
 
+import com.example.medical.config.TestConfig;
 import com.example.medical.domain.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.context.annotation.Import;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,6 +16,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
+@Import(TestConfig.class)
 class AppointmentRepositoryTest {
 
   @Autowired AppointmentRepository  appts;
@@ -106,5 +109,38 @@ class AppointmentRepositoryTest {
         );
 
         assertEquals(2, result.size());
+    }
+
+    @Test
+    void findByDoctorIdAndStatus_returnsCorrectAppointments() {
+      Appointment a1 = createAppointment(doctor1, patient1, LocalDateTime.now().plusDays(1));
+      a1.setStatus(AppointmentStatus.PROGRAMADA);
+      Appointment a2 = createAppointment(doctor1, patient1, LocalDateTime.now().plusDays(2));
+      a2.setStatus(AppointmentStatus.CANCELADA);
+      Appointment a3 = createAppointment(doctor1, patient1, LocalDateTime.now().plusDays(3));
+      a3.setStatus(AppointmentStatus.PROGRAMADA);
+
+      em.persist(a1);
+      em.persist(a2);
+      em.persist(a3);
+      em.flush();
+
+      List<Appointment> result = appts.findByDoctorIdAndStatus(doctor1.getId(), AppointmentStatus.PROGRAMADA);
+
+      assertEquals(2, result.size());
+      assertTrue(result.stream().allMatch(a -> a.getStatus().equals(AppointmentStatus.PROGRAMADA)));
+    }
+
+    @Test
+    void saveDuplicateDni_throwsException() {
+        Patient p2 = new Patient();
+        p2.setDni("11111111A");
+        p2.setFirstName("Paciente");
+        p2.setLastName("Dos");
+
+        assertThrows(Exception.class, () -> {
+            em.persist(p2);
+            em.flush();
+        });
     }
 }

@@ -57,7 +57,7 @@ class JwtIntegrationTest {
   //Acceso con rol no permitido
   void accessPatient_withPacientRole_return403() throws Exception{
 
-    String tokenPaciente = obtenerToken("patient@hospital.com", "Patient1234!");
+    String tokenPaciente = obtenerToken("pat@example.com", "Pat1234!");
 
     mvc.perform(get("/patients")
             .header("Authorization", "Bearer " + tokenPaciente))
@@ -68,7 +68,7 @@ class JwtIntegrationTest {
   //Acceso con rol permitido
   void accesPatient_withAdminRole_return200() throws Exception{
 
-    String tokenAdmin = obtenerToken("admin@hospital.com", "Admin1234!");
+    String tokenAdmin = obtenerToken("admin@example.com", "Admin1234!");
 
     mvc.perform(get("/patients")
             .header("Authorization", "Bearer " + tokenAdmin))

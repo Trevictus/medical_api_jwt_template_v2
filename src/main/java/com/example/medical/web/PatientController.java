@@ -26,7 +26,7 @@ public class PatientController {
     return ResponseEntity.ok(service.list(pageable));
   }
 
-  @GetMapping("/<built-in function id>")
+  @GetMapping("/{id}")
   public ResponseEntity<PatientResponse> get(@PathVariable Long id) {
     return ResponseEntity.ok(service.getById(id));
   }
@@ -35,18 +35,18 @@ public class PatientController {
   public ResponseEntity<PatientResponse> create(@Valid @RequestBody PatientCreateRequest req) {
     PatientResponse created = service.create(req);
     URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-      .path("/<built-in function id>")
+      .path("/{id}")
       .buildAndExpand(created.id())
       .toUri();
     return ResponseEntity.created(location).body(created);
   }
 
-  @PutMapping("/<built-in function id>")
+  @PutMapping("/{id}")
   public ResponseEntity<PatientResponse> update(@PathVariable Long id, @Valid @RequestBody PatientCreateRequest req) {
     return ResponseEntity.ok(service.update(id, req));
   }
 
-  @DeleteMapping("/<built-in function id>")
+  @DeleteMapping("/{id}")
   public ResponseEntity<Void> delete(@PathVariable Long id) {
     service.delete(id);
     return ResponseEntity.noContent().build();

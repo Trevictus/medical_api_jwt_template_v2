@@ -83,5 +83,42 @@ erDiagram
 ```
 
 ## Notas para la entrega
-- Añade aquí cualquier regla de negocio relevante (solape de citas, transiciones de estado, etc.).
-- Indica qué endpoints tienen restricciones por rol.
+
+### Reglas de negocio
+
+#### Estados de citas (AppointmentStatus)
+Las citas pueden tener los siguientes estados:
+- `PROGRAMADA` - Estado inicial al crear una cita
+- `CANCELADA` - Cita cancelada
+- `COMPLETADA` - Cita finalizada correctamente
+- `NO_PRESENTADO` - El paciente no se presentó
+
+#### Transiciones de estado permitidas
+```
+PROGRAMADA → COMPLETADA (cita realizada)
+PROGRAMADA → CANCELADA (cita cancelada)
+PROGRAMADA → NO_PRESENTADO (paciente ausente)
+```
+
+#### Validaciones de citas
+- `startAt` y `endAt` son obligatorios
+- `endAt` debe ser posterior a `startAt`
+- El doctor y paciente deben existir en el sistema
+
+
+### Restricciones por rol en endpoints
+
+| Endpoint | Roles permitidos |
+|----------|------------------|
+| `POST /auth/**` | Público (sin autenticación) |
+| `/actuator/**` | Público (sin autenticación) |
+| `/h2-console/**` | Público (sin autenticación) |
+| `/patients/**` | `ADMIN`, `RECEPCIONISTA` |
+| `/appointments/**` | `ADMIN`, `RECEPCIONISTA`, `MEDICO`, `PACIENTE` |
+| `/medical-records/**` | `ADMIN`, `MEDICO` |
+
+### Roles del sistema
+- `ADMIN` - Acceso total al sistema
+- `RECEPCIONISTA` - Gestión de pacientes y citas
+- `MEDICO` - Gestión de citas y registros médicos
+- `PACIENTE` - Solo consulta de sus propias citas

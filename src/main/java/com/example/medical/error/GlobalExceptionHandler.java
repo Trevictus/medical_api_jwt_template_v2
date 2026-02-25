@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.time.Instant;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -35,6 +36,11 @@ public class GlobalExceptionHandler {
       .map(fe -> fe.getField() + ": " + fe.getDefaultMessage())
       .orElse("Validation error");
     return error(HttpStatus.BAD_REQUEST, msg, req.getRequestURI());
+  }
+
+  @ExceptionHandler(HttpMessageNotReadableException.class)
+  public ResponseEntity<ErrorResponse> handleMessageNotReadable(HttpMessageNotReadableException ex, HttpServletRequest req) {
+    return error(HttpStatus.BAD_REQUEST, "Malformed JSON request", req.getRequestURI());
   }
 
   @ExceptionHandler(Exception.class)

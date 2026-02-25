@@ -36,7 +36,7 @@ public class AppointmentController {
     return ResponseEntity.ok(service.list(doctorId, patientId, status, dateFrom, dateTo, pageable));
   }
 
-  @GetMapping("/<built-in function id>")
+  @GetMapping("/{id}")
   public ResponseEntity<AppointmentResponse> get(@PathVariable Long id) {
     return ResponseEntity.ok(service.getById(id));
   }
@@ -44,17 +44,17 @@ public class AppointmentController {
   @PostMapping
   public ResponseEntity<AppointmentResponse> create(@Valid @RequestBody AppointmentCreateRequest req) {
     AppointmentResponse created = service.create(req);
-    URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/<built-in function id>")
+    URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
       .buildAndExpand(created.id()).toUri();
     return ResponseEntity.created(location).body(created);
   }
 
-  @PutMapping("/<built-in function id>")
+  @PutMapping("/{id}")
   public ResponseEntity<AppointmentResponse> update(@PathVariable Long id, @Valid @RequestBody AppointmentCreateRequest req) {
     return ResponseEntity.ok(service.update(id, req));
   }
 
-  @DeleteMapping("/<built-in function id>")
+  @DeleteMapping("/{id}")
   public ResponseEntity<Void> delete(@PathVariable Long id) {
     service.delete(id);
     return ResponseEntity.noContent().build();
