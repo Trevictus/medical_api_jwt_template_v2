@@ -2,6 +2,7 @@
 package com.example.medical.domain;
 
 import jakarta.persistence.*;
+
 import java.time.Instant;
 
 @Entity
@@ -29,14 +30,12 @@ public class AppUser {
   @Column(nullable = false)
   private Instant createdAt = Instant.now();
 
-  protected AppUser() {}
+  public AppUser() {}
 
-  public static AppUser create(String email, String passwordHash, Role role) {
-    AppUser u = new AppUser();
-    u.email = email;
-    u.passwordHash = passwordHash;
-    u.role = role;
-    return u;
+  public AppUser(String email, String passwordHash, Role role) {
+    this.email = email;
+    this.passwordHash = passwordHash;
+    this.role = role;
   }
 
   public Long getId() { return id; }
@@ -44,6 +43,16 @@ public class AppUser {
   public String getPasswordHash() { return passwordHash; }
   public Role getRole() { return role; }
   public boolean isActive() { return active; }
+  public Instant getCreatedAt() { return createdAt; }
 
+  public void setEmail(String email) { this.email = email; }
+  public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
+  public void setRole(Role role) { this.role = role; }
   public void setActive(boolean active) { this.active = active; }
+  public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+
+  public static AppUser create(String email, String passwordHash, Role role) {
+    return new AppUser(email, passwordHash, role);
+  }
 }
+

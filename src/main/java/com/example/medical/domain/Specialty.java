@@ -21,7 +21,7 @@ public class Specialty {
   @Column(nullable = false)
   private boolean active = true;
 
-  protected Specialty() {}
+  public Specialty() {}
 
   public Long getId() { return id; }
   public String getCode() { return code; }
